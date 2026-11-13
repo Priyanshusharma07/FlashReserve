@@ -34,8 +34,8 @@ services:
 
   api:
     build:
-      context: apps/backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/backend/Dockerfile
     container_name: flashreserve_api
     environment:
       NODE_ENV: production
@@ -57,8 +57,8 @@ services:
 
   worker:
     build:
-      context: apps/backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/backend/Dockerfile
     container_name: flashreserve_worker
     environment:
       NODE_ENV: production
