@@ -18,9 +18,19 @@ import type {
   UserReservationsQuery,
 } from '@flashreserve/shared-types';
 
-const API_BASE_URL =
-  (typeof process !== 'undefined' && (process.env?.VITE_API_URL || process.env?.NEXT_PUBLIC_API_URL)) ||
-  'http://localhost:3000';
+const getApiBaseUrl = (): string => {
+  if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
+    const viteUrl = (import.meta as any).env['VITE_API_URL'];
+    if (viteUrl) return viteUrl;
+  }
+  if (typeof process !== 'undefined' && process.env) {
+    const envUrl = process.env['VITE_API_URL'] || process.env['NEXT_PUBLIC_API_URL'];
+    if (envUrl) return envUrl;
+  }
+  return 'http://localhost:3000';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export class ApiClient {
   private token: string | null = null;
@@ -258,3 +268,4 @@ export class ApiClient {
 }
 
 export const api = new ApiClient();
+
