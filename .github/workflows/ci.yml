@@ -2,7 +2,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, FlashReserve]
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -16,16 +16,19 @@ jobs:
         with:
           filters: |
             frontend:
-              - 'src/**'
-              - 'packages/shared-types/**'
-              - 'package.json'
+              - 'frontend/src/**'
+              - 'frontend/packages/shared-types/**'
+              - 'frontend/package.json'
             backend:
-              - 'apps/backend/**'
-              - 'packages/shared-types/**'
+              - 'frontend/apps/backend/**'
+              - 'frontend/packages/shared-types/**'
   frontend:
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -38,5 +41,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun install
-      - run: bun run --cwd apps/backend test
+      - run: bun install --cwd frontend
+      - run: bun run --cwd frontend/apps/backend test
