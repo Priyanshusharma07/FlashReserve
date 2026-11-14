@@ -1,0 +1,28 @@
+{
+  "name": "flashreserve-monorepo",
+  "version": "0.0.1",
+  "private": true,
+  "packageManager": "npm@10.9.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "start": "turbo run start",
+    "backend:dev": "npm run --workspace=@flashreserve/backend dev",
+    "backend:build": "npm run --workspace=@flashreserve/backend build",
+    "backend:test": "npm run --workspace=@flashreserve/backend test",
+    "backend:seed": "npm run --workspace=@flashreserve/backend seed",
+    "frontend:dev": "npm run --workspace=@flashreserve/frontend dev",
+    "frontend:build": "npm run --workspace=@flashreserve/frontend build",
+    "format": "prettier --write \"apps/**/*.{ts,tsx}\" \"packages/**/*.{ts,tsx}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "turbo": "^2.4.4"
+  }
+}

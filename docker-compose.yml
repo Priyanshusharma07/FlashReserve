@@ -1,0 +1,84 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: flashreserve_postgres
+    environment:
+      POSTGRES_USER: flashuser
+      POSTGRES_PASSWORD: flashpassword
+      POSTGRES_DB: flashreserve
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flashuser -d flashreserve"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: flashreserve_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: flashreserve_api
+    environment:
+      NODE_ENV: production
+      APP_MODE: api
+      PORT: 3000
+      DATABASE_URL: postgresql://flashuser:flashpassword@postgres:5432/flashreserve
+      REDIS_URL: redis://redis:6379
+      RESERVATION_TTL_SECONDS: 600
+      MAX_RESERVATION_QUANTITY: 5
+      AUTH_MODE: dev
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: flashreserve_worker
+    environment:
+      NODE_ENV: production
+      APP_MODE: worker
+      PORT: 3001
+      DATABASE_URL: postgresql://flashuser:flashpassword@postgres:5432/flashreserve
+      REDIS_URL: redis://redis:6379
+      REDIS_STREAM_NAME: stream:reservations
+      REDIS_CONSUMER_GROUP: flash_workers_group
+      WORKER_CONSUMER_NAME: worker-container-1
+      PERSISTENCE_BATCH_SIZE: 500
+      PERSISTENCE_BATCH_INTERVAL_MS: 50
+      EXPIRATION_SWEEPER_INTERVAL_MS: 15000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pg_data:
+  redis_data:
