@@ -11,6 +11,7 @@ import { MetricsModule } from './modules/metrics/metrics.module.js';
 import { ReservationModule } from './modules/reservation/reservation.module.js';
 import { WorkerModule } from './modules/worker/worker.module.js';
 import { RedisModule } from './redis/redis.module.js';
+import { AppController } from './app.controller.js';
 
 @Module({
   imports: [
@@ -27,5 +28,6 @@ import { RedisModule } from './redis/redis.module.js';
     AdminModule,
     WorkerModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

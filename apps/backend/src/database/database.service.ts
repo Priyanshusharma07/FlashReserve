@@ -99,7 +99,8 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     try {
       const result = await this.pool.query<T>(text, params);
       const duration = Date.now() - start;
-      if (duration > 100) {
+      const slowQueryThreshold = parseInt(process.env['SLOW_QUERY_THRESHOLD_MS'] || '1000', 10);
+      if (duration > slowQueryThreshold) {
         this.logger.warn(`Slow query (${duration}ms): ${text.slice(0, 100)}`, 'DatabaseService');
       }
       return result;
