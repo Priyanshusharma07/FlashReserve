@@ -8,7 +8,7 @@ import { api } from "./api-client";
 
 export const integration = {
   state: "connected" as const,
-  backendUrl: "http://localhost:3000/api/v1",
+  backendUrl: "http://127.0.0.1:3000/api/v1",
   reason: "FlashReserve High-Concurrency Engine connected.",
 };
 

@@ -27,7 +27,7 @@ const getApiBaseUrl = (): string => {
     const envUrl = process.env['VITE_API_URL'] || process.env['NEXT_PUBLIC_API_URL'];
     if (envUrl) return envUrl;
   }
-  return 'http://localhost:3000';
+  return 'http://127.0.0.1:3000';
 };
 
 const API_BASE_URL = getApiBaseUrl();
