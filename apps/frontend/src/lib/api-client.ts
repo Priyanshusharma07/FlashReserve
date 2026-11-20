@@ -65,22 +65,35 @@ export class ApiClient {
       headers.set('Authorization', `Bearer ${this.token}`);
     }
 
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      ...options,
-      headers,
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
 
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({}));
-      const message =
-        errorBody.message ||
-        (Array.isArray(errorBody.message) ? errorBody.message.join(', ') : null) ||
-        `HTTP ${response.status}: ${response.statusText}`;
-      throw new Error(message);
+    try {
+      const response = await fetch(`${API_BASE_URL}${path}`, {
+        ...options,
+        headers,
+        signal: options.signal || controller.signal,
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        const message =
+          errorBody.message ||
+          (Array.isArray(errorBody.message) ? errorBody.message.join(', ') : null) ||
+          `HTTP ${response.status}: ${response.statusText}`;
+        throw new Error(message);
+      }
+
+      const body = await response.json();
+      return this.unwrap<T>(body);
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        throw new Error('Request timed out. Please check your backend connection.');
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeout);
     }
-
-    const body = await response.json();
-    return this.unwrap<T>(body);
   }
 
   private unwrap<T>(body: any): T {
