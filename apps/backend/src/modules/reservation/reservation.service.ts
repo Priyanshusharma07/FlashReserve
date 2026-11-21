@@ -53,6 +53,7 @@ export class ReservationService {
       .digest('hex');
 
     const nowMs = Date.now();
+    const nowIso = new Date(nowMs).toISOString();
     const ttlSeconds = this.config.reservationTtlSeconds;
 
     const keys = [
@@ -72,6 +73,7 @@ export class ReservationService {
       payloadHash,
       nowMs,
       ttlSeconds,
+      nowIso,
     ];
 
     const [status, responsePayload, remainingStock] = await this.redis.executeReserveScript(keys, args);

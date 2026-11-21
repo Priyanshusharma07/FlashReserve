@@ -17,6 +17,7 @@
 -- 5: payloadHash (sha256 of normalized body)
 -- 6: nowMs (current timestamp in milliseconds)
 -- 7: ttlSeconds (reservation TTL, e.g. 600)
+-- 8: nowIso (optional ISO 8601 string, e.g. "2026-11-21T18:45:00.000Z")
 
 local stockKey  = KEYS[1]
 local metaKey   = KEYS[2]
@@ -32,6 +33,7 @@ local quantity      = tonumber(ARGV[4])
 local payloadHash   = ARGV[5]
 local nowMs         = tonumber(ARGV[6])
 local ttlSeconds    = tonumber(ARGV[7])
+local nowIso        = ARGV[8] or ""
 
 -- 1. Idempotency Check
 if redis.call("EXISTS", idemKey) == 1 then
@@ -51,19 +53,33 @@ end
 
 local meta = redis.call("HMGET", metaKey, "isActive", "startsAt", "endsAt")
 local isActive = meta[1]
-local startsAt = tonumber(meta[2] or "0")
-local endsAt   = tonumber(meta[3] or "0")
+local startsAt = tonumber(meta[2]) or 0
+local endsAt   = tonumber(meta[3]) or 0
 
-if isActive ~= "true" then
+if isActive ~= "true" and isActive ~= "1" then
   return {"INACTIVE", "Campaign is not currently active"}
 end
 
-if startsAt > 0 and nowMs < startsAt then
-  return {"NOT_STARTED", "Campaign has not started yet"}
+-- Validate campaign start time (numeric ms or ISO string comparison)
+if startsAt > 0 then
+  if nowMs < startsAt then
+    return {"NOT_STARTED", "Campaign has not started yet"}
+  end
+elseif meta[2] and meta[2] ~= "" and nowIso ~= "" and #meta[2] >= 19 and #nowIso >= 19 then
+  if nowIso < meta[2] then
+    return {"NOT_STARTED", "Campaign has not started yet"}
+  end
 end
 
-if endsAt > 0 and nowMs > endsAt then
-  return {"ENDED", "Campaign has already ended"}
+-- Validate campaign end time (numeric ms or ISO string comparison)
+if endsAt > 0 then
+  if nowMs > endsAt then
+    return {"ENDED", "Campaign has already ended"}
+  end
+elseif meta[3] and meta[3] ~= "" and nowIso ~= "" and #meta[3] >= 19 and #nowIso >= 19 then
+  if nowIso > meta[3] then
+    return {"ENDED", "Campaign has already ended"}
+  end
 end
 
 -- 3. One Reservation Per User Per Campaign

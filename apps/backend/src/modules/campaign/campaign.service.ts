@@ -146,8 +146,10 @@ export class CampaignService {
       title: entity.title,
       priceCents: entity.price_cents.toString(),
       totalInventory: entity.total_inventory.toString(),
-      startsAt: entity.starts_at.toISOString(),
-      endsAt: entity.ends_at.toISOString(),
+      startsAt: entity.starts_at.getTime().toString(),
+      endsAt: entity.ends_at.getTime().toString(),
+      startsAtIso: entity.starts_at.toISOString(),
+      endsAtIso: entity.ends_at.toISOString(),
       isActive: isActive ? 'true' : 'false',
     });
   }
