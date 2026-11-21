@@ -1,45 +1,37 @@
 name: CI
+
 on:
   pull_request:
   push:
     branches: [main, FlashReserve]
+
 jobs:
-  changes:
+  test:
+    name: Build & Test
     runs-on: ubuntu-latest
-    outputs:
-      frontend: ${{ steps.filter.outputs.frontend }}
-      backend: ${{ steps.filter.outputs.backend }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
         with:
-          filters: |
-            frontend:
-              - 'frontend/src/**'
-              - 'frontend/packages/shared-types/**'
-              - 'frontend/package.json'
-            backend:
-              - 'frontend/apps/backend/**'
-              - 'frontend/packages/shared-types/**'
-  frontend:
-    needs: changes
-    if: needs.changes.outputs.frontend == 'true'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-      - run: bun install
-      - run: bun run test
-  backend:
-    needs: changes
-    if: needs.changes.outputs.backend == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-      - run: bun install --cwd frontend
-      - run: bun run --cwd frontend/apps/backend test
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Shared Types
+        run: npm run --workspace=@flashreserve/shared-types build
+
+      - name: Test Frontend
+        run: npm run --workspace=@flashreserve/frontend test
+
+      - name: Build Frontend
+        run: npm run --workspace=@flashreserve/frontend build
+
+      - name: Test Backend
+        run: npm run --workspace=@flashreserve/backend test
+
+      - name: Build Backend
+        run: npm run --workspace=@flashreserve/backend build

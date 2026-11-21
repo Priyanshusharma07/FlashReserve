@@ -46,6 +46,7 @@ services:
       RESERVATION_TTL_SECONDS: 600
       MAX_RESERVATION_QUANTITY: 5
       AUTH_MODE: dev
+      PASETO_SECRET_KEY: k4.local.7329584307520495834095834095834095834095834095834095834095834095
     ports:
       - "3000:3000"
     depends_on:
@@ -77,6 +78,19 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3000
+    container_name: flashreserve_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - api
     restart: unless-stopped
 
 volumes:
