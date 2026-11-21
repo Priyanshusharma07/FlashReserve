@@ -18,6 +18,8 @@ import {
   Database,
   Cpu,
   Layers,
+  Plus,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +27,7 @@ import { AdminShell } from "@/components/admin-shell";
 import { api, integration } from "@/lib/flashreserve";
 import { useAuth } from "@/lib/auth-context";
 import { AuthModal } from "@/components/auth-modal";
+import { CreateCampaignModal } from "@/components/create-campaign-modal";
 
 type View = "overview" | "campaigns" | "reservations" | "metrics" | "settings";
 const titles: Record<View, string> = {
@@ -38,6 +41,7 @@ const titles: Record<View, string> = {
 export function AdminContent({ view, id }: { view: View; id?: string }) {
   const { isAdmin } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [createCampaignOpen, setCreateCampaignOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [copied, setCopied] = useState(false);
@@ -136,6 +140,10 @@ export function AdminContent({ view, id }: { view: View; id?: string }) {
         onOpenChange={setAuthModalOpen}
         defaultRole="admin"
       />
+      <CreateCampaignModal
+        open={createCampaignOpen}
+        onOpenChange={setCreateCampaignOpen}
+      />
 
       {/* OVERVIEW VIEW */}
       {view === "overview" && (
@@ -196,8 +204,18 @@ export function AdminContent({ view, id }: { view: View; id?: string }) {
 
               <div className="mt-10 grid gap-10 lg:grid-cols-2">
                 <div className="border-t border-border pt-6">
-                  <h2 className="text-sm font-semibold">Campaign Operations</h2>
-                  <div className="mt-6 space-y-3">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-sm font-semibold">Campaign Operations</h2>
+                    <Button
+                      size="sm"
+                      className="gap-1.5 text-xs font-semibold h-8"
+                      onClick={() => setCreateCampaignOpen(true)}
+                    >
+                      <Plus className="size-3.5" />
+                      Create Flash Campaign
+                    </Button>
+                  </div>
+                  <div className="mt-4 space-y-3">
                     {[
                       { to: "/admin/campaigns", label: "Manage campaigns & inventory", icon: Package },
                       { to: "/admin/reservations", label: "Inspect reservation logs", icon: Ticket },
@@ -284,10 +302,19 @@ export function AdminContent({ view, id }: { view: View; id?: string }) {
                     size="sm"
                     onClick={() => campaignsQuery.refetch()}
                     disabled={campaignsQuery.isFetching}
+                    title="Refresh campaigns"
                   >
                     <RefreshCw
                       className={`size-3.5 ${campaignsQuery.isFetching ? "animate-spin" : ""}`}
                     />
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setCreateCampaignOpen(true)}
+                    className="gap-1.5 text-xs font-semibold"
+                  >
+                    <Plus className="size-4" />
+                    New Campaign
                   </Button>
                 </div>
               </div>
@@ -351,29 +378,42 @@ export function AdminContent({ view, id }: { view: View; id?: string }) {
                             <div>End: {formatDate(camp.endsAt)}</div>
                           </td>
                           <td className="p-4 text-right">
-                            {camp.isActive ? (
+                            <div className="flex items-center justify-end gap-2">
                               <Button
                                 size="sm"
-                                variant="outline"
-                                className="h-7 text-xs text-amber-500 hover:text-amber-600 gap-1"
-                                disabled={deactivateMutation.isPending}
-                                onClick={() => deactivateMutation.mutate(camp.id)}
+                                variant="ghost"
+                                className="h-7 text-xs text-muted-foreground hover:text-foreground gap-1"
+                                asChild
                               >
-                                <Square className="size-3 fill-current" />
-                                Deactivate
+                                <Link to="/sales/$campaignId" params={{ campaignId: camp.id }}>
+                                  <ExternalLink className="size-3" />
+                                  View
+                                </Link>
                               </Button>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-xs text-emerald-500 hover:text-emerald-600 gap-1"
-                                disabled={activateMutation.isPending}
-                                onClick={() => activateMutation.mutate(camp.id)}
-                              >
-                                <Play className="size-3 fill-current" />
-                                Activate
-                              </Button>
-                            )}
+                              {camp.isActive ? (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 text-xs text-amber-500 hover:text-amber-600 gap-1"
+                                  disabled={deactivateMutation.isPending}
+                                  onClick={() => deactivateMutation.mutate(camp.id)}
+                                >
+                                  <Square className="size-3 fill-current" />
+                                  Deactivate
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 text-xs text-emerald-500 hover:text-emerald-600 gap-1"
+                                  disabled={activateMutation.isPending}
+                                  onClick={() => activateMutation.mutate(camp.id)}
+                                >
+                                  <Play className="size-3 fill-current" />
+                                  Activate
+                                </Button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))
