@@ -153,3 +153,4 @@ export default function () {
     funnelJourneyFailure.add(1);
   }
 }
+

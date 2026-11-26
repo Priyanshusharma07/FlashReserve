@@ -66,3 +66,4 @@ export default function () {
     benchmarkErrors.add(1);
   }
 }
+
