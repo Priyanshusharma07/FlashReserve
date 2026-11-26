@@ -19,11 +19,11 @@ export class AppConfigService {
   }
 
   get isWorker(): boolean {
-    return this.appMode === AppMode.Worker;
+    return this.appMode === AppMode.Worker || this.appMode === AppMode.All;
   }
 
   get isApi(): boolean {
-    return this.appMode === AppMode.Api;
+    return this.appMode === AppMode.Api || this.appMode === AppMode.All;
   }
 
   get databaseUrl(): string {

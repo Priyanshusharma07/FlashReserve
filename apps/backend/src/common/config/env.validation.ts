@@ -19,6 +19,7 @@ export enum Environment {
 export enum AppMode {
   Api = 'api',
   Worker = 'worker',
+  All = 'all',
 }
 
 export enum AuthMode {

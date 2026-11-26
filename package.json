@@ -21,6 +21,7 @@
     "frontend:build": "npm run --workspace=@flashreserve/frontend build",
     "bench:reset": "node benchmarks/scripts/reset-benchmark.js",
     "bench:audit": "node benchmarks/scripts/audit-consistency.js",
+    "bench:e2e": "node benchmarks/scripts/e2e-flow.js",
     "bench:smoke": "k6 run benchmarks/k6/smoke.js",
     "bench:reads": "k6 run benchmarks/k6/reads.js",
     "bench:reservations": "k6 run benchmarks/k6/reservations.js",
