@@ -14,6 +14,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, name?: string) => Promise<void>;
   loginAsSeed: (role: 'admin' | 'user') => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -62,6 +63,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const register = async (email: string, password: string, name?: string) => {
+    setIsLoading(true);
+    try {
+      const res = await api.register({ email, password, name });
+      if (res.user) {
+        setUser(res.user);
+      } else {
+        await refreshUser();
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const loginAsSeed = async (role: 'admin' | 'user') => {
     if (role === 'admin') {
       await login('admin@flashreserve.io', 'Admin@12345');
@@ -88,6 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!user,
         isAdmin: user?.role === 'admin',
         login,
+        register,
         loginAsSeed,
         logout,
         refreshUser,

@@ -142,7 +142,7 @@ export function AdminShell({ title, children }: { title: string; children: React
                 <div>
                   <h2 className="text-xs font-semibold">Authorized access required</h2>
                   <p className="mt-1 text-xs leading-6 text-muted-foreground">
-                    Sign in with an admin account (<code>admin@flashreserve.io</code>) to manage campaigns, monitor reservations, and audit inventory drift.
+                    Sign in with an authorized administrator account to manage campaigns, monitor reservations, and audit inventory drift.
                   </p>
                 </div>
               </div>
